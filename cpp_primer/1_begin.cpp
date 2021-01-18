@@ -1,11 +1,12 @@
 #include <iostream>
 #include <typeinfo>
 using namespace std;
-int main(){
-    double obj = 3.14, *pd = &obj;
 
-void *pv;
-pv = &obj;  //
-pv = pd;
-    cout<<"hell";
+int main(){
+
+const double pi = 3.14;
+const double *cptr = &pi;
+
+double dval = 10;
+cptr = &dval;
 }
