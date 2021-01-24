@@ -271,9 +271,9 @@ pv = pd;    // 指向double指针
 
 > 指向常量的指针
 >
-> 不能用于改变其所指对象的值
+> 不能用于改变其所指对象的值, 但可以改变指向
 
-- 类似常量引用, 指向常量的指针不能用于改变其所指向的对象的值. 那它的作用是什么呢? <u>作用就是存放常量对象的地址</u>
+- 类似常量引用, 指向常量的指针不能用于改变其所指向的对象的值. 那它的作用是什么呢? <u>作用就是存放常量对象的地址</u> 
 - 不初始化不会报错
 
 ```cpp
@@ -286,9 +286,11 @@ cptr = &dval;
 
 - <u>指向常量的指针可以指向一个非常量对象</u>, 被指向的对象可以通过其他方式改变, 但是不能通过指向常量的指针改变. 听起来有点是指针"自以为是", 以为自己指向的是常量, 也就自觉地不去改变所指对象的值了. 
 
-# 变量
+# 变量和常量
 
-## 变量定义
+## 变量
+
+### 变量定义
 
 > 变量定义就是告诉编译器在何处创建变量的存储，以及如何创建变量的存储
 
@@ -302,11 +304,11 @@ cptr = &dval;
   - 如上(1), 虽然基本类型只有一个, 但是声明符的形式可以不同, 也就是一条定义语句可能定义出不同类型的变量
   - 如上(2), 定义的是一个指针和一个int, *是声明符的一部分, 它只是修饰了p1, 对该声明语句中的其他变量没有影响. 
 
-### 初始化
+#### 初始化
 
 - **初始化不是赋值**, 初始化的含义是创建变量时赋予其一个初始值, 而赋值的含义是把对象的当前值擦除, 然后以一个新值替代. 
 
-#### 列表初始化
+##### 列表初始化
 
 > list initialization
 
@@ -327,16 +329,16 @@ int b{0};
   int d = ld;
   ```
 
-#### 默认初始化
+##### 默认初始化
 
 > default initialization
 
 - 变量被赋予默认值, 默认值是什么由变量类型和(某些情况下)变量的位置决定
   - 如果内置类型的变量未被显式初始化, 它的值由定义的位置决定: 定义于任何函数体之外的变量被初始化为1; <u>定义在函数体内部的内置类型将**不被初始化**(uninitialized).</u> 
 
-#### 显式初始化
+##### 显式初始化
 
-### 与声明的关系
+#### 与声明的关系
 
 > definition & declaration
 
@@ -355,14 +357,14 @@ extern int k = 3;  // 声明并定义k, 赋初值抵消了extern的作用
 - <u>变量能且只能被定义一次, 但可以被多次声明</u> 
 - 如果在多个文件中使用同一个变量, 就必须将声明和定义分离: <u>变量的定义必须且只能出现在一个文件中, 而其他用到该变量的文件必须对其进行声明, 却绝对不能重复定义</u>
 
-## 变量声明
+### 变量声明
 
 - 一条声明语句有一个**基本数据类型 (base type)**和紧随其后的一个**声明符 (declarator)**列表组成
   - 每个声明符命名了一个变量, 并指定该变量为与基本数据类型有关的某种类型
   - 声明符可以是变量名, 此时变量的类型也就是声明的基本数据类型
   - 还有更复杂的声明符
 
-## 标识符
+### 标识符
 
 > identifier
 
@@ -370,27 +372,11 @@ extern int k = 3;  // 声明并定义k, 赋初值抵消了extern的作用
 
 :fist_right: 变量名一般用小写字母, 用户自定义的类名一般以大写字母开头
 
-## 作用域
 
-### 全局作用域
 
-> global scope
+## 常量
 
-### 块作用域
-
-> block scope
-
-### 内层作用域
-
-> inner scope
-
-### 外层作用域
-
-> outer scope
-
-# 常量
-
-## const
+### const
 
 > const 限定符
 
@@ -402,7 +388,7 @@ extern int k = 3;  // 声明并定义k, 赋初值抵消了extern的作用
 
   ![image-20210113191421570](Notes.assets/image-20210113191421570.png)
 
-## const pointer
+### const pointer
 
 - 指针是对象, 所以像其他对象类型一样, 可以把指针自身定位常量(引用就不行)
 - const pointer必须初始化, 一旦初始化后, 它的值(存放的地址)就不能再改变了. 
@@ -422,7 +408,7 @@ const double *const pip = &pi;  // 指向常量对象的const pointer, 不能修
 - *: 对象的类型由声明符的其余部分确定. 下一个符号是\*, 所以curErr是一个常量指针
 - int: 指向int的常量指针
 
-## x-level const
+### x-level const
 
 > 顶层 const: top-level const, 本身是常量
 >
@@ -430,8 +416,125 @@ const double *const pip = &pi;  // 指向常量对象的const pointer, 不能修
 
 - 顶层 const可以表示任意的对象是常量, 算数类型, 类, 指针等
 - 底层 const则与指针和引用等符号和类型的基本类型部分有关
+  - 拷贝底层const的时候，两个指针(引用)必须都是底层const
 - 指针类型既可以是顶层const, 也可以是底层const
 - 对于函数而言，还有一个 `return_type class::funcname(param_list) const`，这个 const 虽然看起来在右边，但其实是用来修饰 *this 的，应该理解为 const typeof(this) *this，也是 low level const。
+
+### constexpr
+
+> cosnt expression
+>
+> 常量表达式: <u>值不会改变并且编译过程中就能得到计算结果的表达式</u>, eg. 字面值类型, 用常量表达式初始化的const对象
+
+- 具体例子: 
+
+  ```cpp
+  const int f = 20;  // constexpr
+  const int l = f + 1;  // constexpr, 其中f必须是const, 否则也没戏
+  const int sz = get_size();  // sz不是constexpr, 因为编译的时候还不能知道结果
+  ```
+
+- C++11允许将变量声明为constexpr, 让编译器来验证变量的值是否是一个常量表达式
+
+  ![image-20210119183333792](Notes.assets/image-20210119183333792.png)
+
+:exclamation: constexpr指针的初始值必须是nullptr或者0, 或者存储于某个固定地址中的对象(仅在函数体范围内有效的变量不会存放在固定地址中, 函数体外的对象就固定)
+
+#### constexpr指针
+
+```cpp
+constexpr int *q = nullptr;  // q是一个const pointer, 不是pointer to const
+
+constexpr int i = 35;
+constexpr const int *p = &i;  // 
+```
+
+#### constexpr函数
+
+## 作用域
+
+### 全局作用域
+
+> global scope
+
+### 块作用域
+
+> block scope
+
+### 内层作用域
+
+> inner scope
+
+### 外层作用域
+
+> outer scope
+
+## 类型别名
+
+### typedef
+
+![image-20210119185303090](Notes.assets/image-20210119185303090.png)
+
+- 注意, 如果有const,  const是对给定类型的修饰
+
+```cpp
+typedef char *pstring;
+const pstring cstr = 0;  // cstr是一个常量指针, 而不是pointer to const
+```
+
+
+
+### using![image-20210119190135620](Notes.assets/image-20210119190135620.png)
+
+## 类型说明符
+
+### auto
+
+- auto一般会忽略掉顶层const, 同时底层const则会保留下来, 比如当初始值是一个指向常量的指针时
+
+![image-20210123190306561](Notes.assets/image-20210123190306561.png)![image-20210123185900545](Notes.assets/image-20210123185900545.png)
+
+- 如果希望推出的auto类型是一个顶层const, 则需明确指出:
+
+  ```cpp
+  const auto f = ci;  // f是const int
+  ```
+
+## 类型指示符
+
+### decltype
+
+> 返回操作数的数据类型
+>
+> 编译器: 分析表达式并得到它的类型, 但不实际计算表达式的值
+
+```cpp
+decltype(f()) sum = x;
+```
+
+![image-20210124103858855](Notes.assets/image-20210124103858855.png)
+
+- 引用从来都作为其所指对象的同义词出现, 只有在decltype处有点不同. 比如上面的cj
+
+### decltype和引用
+
+```cpp
+int i = 42, *p = &i, &r = i;
+```
+
+如果想让结果类型是r所指的类型, 可以把r作为表达式的一部分, 如r+0. 因为如果decltype(r)的结果是引用类型
+
+```cpp
+decltype(r + 0)b;
+```
+
+如果表达式的内容是解引用操作, 则decltype将得到引用类型. 
+
+```cpp
+decltype(*p) c;  // 得到的类型是int& 而不是int
+```
+
+
 
 # ghost
 
