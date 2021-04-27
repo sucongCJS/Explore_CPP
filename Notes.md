@@ -286,6 +286,164 @@ cptr = &dval;
 
 - <u>指向常量的指针可以指向一个非常量对象</u>, 被指向的对象可以通过其他方式改变, 但是不能通过指向常量的指针改变. 听起来有点是指针"自以为是", 以为自己指向的是常量, 也就自觉地不去改变所指对象的值了. 
 
+## 数组
+
+- 数组的维度必须是一个 <u>常量表达式</u> (有的编译器会比较宽容, 也就是所谓编译器扩展, 但这是非标准特性, 可能在有的编译器上就失效)
+
+  ```cpp
+  constexpr unsigned sz = 42;
+  int *parr[sz];
+  ```
+
+### 声明
+
+```cpp
+int *ptrs[10];  // 整型指针的数组
+// 从右到左依次是: 大小为10, 名字是ptrs, int *整型指针
+
+int (*Parray)[10] = &arr;  // Parray指向一个含有10个整数的数组
+// 从内向外依次是: *Parray表明Parray是一个指针, 指向int数组, 数组有10个元素
+
+int (&arrRef)[10] = aarr;  // arrRef引用一个含有10个整数的数组
+// 同理
+
+int *(&array)[10] = ptrs;  // array引用一个有10个整型指针的数组
+```
+
+
+
+### 初始化
+
+![image-20210218201905900](Notes.assets/image-20210218201905900.png)
+
+字符数组结尾要空字符
+
+![image-20210218202138425](Notes.assets/image-20210218202138425.png)
+
+## 迭代器
+
+> 迭代器这个名词有三种含义:
+>
+> - 迭代器概念本身
+> - 容器定义的迭代器类型: 能够访问容器的元素, 从某个元素移动到另一个元素
+> - 某个迭代器对象
+
+- 成员
+  - end 成员返回指向容器(或string对象)“尾元素的下一位置(one past the end)”的<u>迭代器</u>. 也就是说, 该<u>迭代器</u>指示的是容器的一个本不存在的“尾后(off the end)”元素
+  - begin 成员. 如果容器为空, begin和end返回的是同一个迭代器
+
+### 类型
+
+> iterator
+>
+> const_iterator: 对象是常量
+
+![image-20210217191803765](Notes.assets/image-20210217191803765.png)
+
+### 操作
+
+![image-20210217191025776](Notes.assets/image-20210217191025776.png)
+
+![image-20210218000634722](Notes.assets/image-20210218000634722.png)
+
+- 和指针类似, 也能通过解引用 迭代器来获取它所指的元素. 
+
+- cbegin(): 不论对象本身是否是常量, 返回值都是const_iterator
+
+- `it->mem`和`(*it).mem`意思相同
+
+  <img src="Notes.assets/image-20210217233639916.png" alt="image-20210217233639916" style="zoom: 50%;" />
+
+- 两个迭代器相减得到的带符号整型数的类型名叫 difference_type
+- 注意没有两个迭代器相加的运算, 因为没有意义
+
+## string
+
+```cpp
+#include <string>
+using std::string
+```
+
+![image-20210130185359328](Notes.assets/image-20210130185359328.png)
+
+![直接初始化, 拷贝初始化](Notes.assets/image-20210130193728948.png)
+
+- 初始化要用到多个值(上面的例子需要用到多个字符‘c’), 一般来说只能用直接初始化, 或者创建一个临时对象用于拷贝![image-20210130200240102](Notes.assets/image-20210130200240102.png)
+- 接受无参数的初始化方式, 无论在函数内还是函数外都默认初始化为空串
+
+### 操作
+
+![getline](Notes.assets/image-20210130200757696.png)
+
+- getline 能够保留输入时的空白符, >>运算符不行. getline 读入内容直到遇到换行符 (换行符也会被读进来), 然后保存到 string 对象中 (换行符不存). 
+
+  ```cpp
+  string line;
+  while(getline(cin, line))
+      cout<<line<<endl;
+  ```
+
+处理字符串中的字符
+
+![cctype](Notes.assets/image-20210131202206722.png)
+
+### string::size_type
+
+> size函数返回的类型, unsigned
+>
+> 在类string中定义的
+
+:exclamation: 不要和int混用, 因为int和unsigned比较int会被当成无符号的
+
+```cpp
+string line = "hello";
+int a = -10;
+if(line.size() < a)  // 为true
+    cout<<"error";
+```
+
+### 相加
+
+因为字面值不能直接相加, 所以
+
+```cpp
+string s1 = "hi";
+string s2 = "hello" + ", " + s1;  // 错误
+string s3 = s1 + ", " + "hello";  // 正确, s1 + ", "先变为string, string可以和字面值相加
+```
+
+历史原因, 以及为了和C兼容, 字符串字面值不是string对象
+
+## vector
+
+> vector 是模板而非类型
+
+- 副作用
+  - :question: 如果循环体内部包含有向vector对象添加元素的语句, 则不能使用范围for循环. 
+  - :question: 任何一种可能改变vector对象容量的操作, 如push_back, 都会使该vector对象的迭代器失效
+
+:exclamation: vector 是模板而非类型, 由vector生成的类型必须包含vector中的元素的类型, 例如vector\<int>
+
+- vector 是一个**类模板(class template)**. 模板本身不是类或函数, 可以将模板看作为编译器生成类或函数编写的一份说明. 
+  - 编译器根据模板创建类或函数的过程称为实例化(instantiation), 当使用模板时, 需要指出编译器应该把类或函数实例化为何种类型, 如`vector<in> ivec;`  编译器根据模板vector生成vector\<int>类型. 
+
+### 初始化
+
+```cpp
+vector<string> articles = {"a", "an", "the"};  // 列表初始化
+vector<string> svec(10, "hi!");  // 10个"hi!". 
+```
+
+### 操作
+
+![image-20210216204352394](Notes.assets/image-20210216204352394.png)
+
+- size 返回vector定义的size_type类型
+
+  ![image-20210216205154373](Notes.assets/image-20210216205154373.png)
+
+- 
+
 # 变量和常量
 
 ## 变量
@@ -328,6 +486,10 @@ int b{0};
   int c(ld);
   int d = ld;
   ```
+  
+  类内初始值不能使用圆括号初始化, 因为会产生歧义
+  
+  <img src="Notes.assets/image-20210128114304244.png" alt="image-20210128114304244" style="zoom:67%;" />
 
 ##### 默认初始化
 
@@ -431,7 +593,7 @@ const double *const pip = &pi;  // 指向常量对象的const pointer, 不能修
   ```cpp
   const int f = 20;  // constexpr
   const int l = f + 1;  // constexpr, 其中f必须是const, 否则也没戏
-  const int sz = get_size();  // sz不是constexpr, 因为编译的时候还不能知道结果
+  const int sz = get_size();  // sz不是constexpr. 只有当get_size()是一个constexpr函数时才正确. 
   ```
 
 - C++11允许将变量声明为constexpr, 让编译器来验证变量的值是否是一个常量表达式
@@ -469,6 +631,10 @@ constexpr const int *p = &i;  //
 
 > outer scope
 
+### 全局变量和局部变量
+
+- 内置类型int如果在所有函数外定义会默认初始化为0, 在函数内定义不会被初始化
+
 ## 类型别名
 
 ### typedef
@@ -490,7 +656,7 @@ const pstring cstr = 0;  // cstr是一个常量指针, 而不是pointer to const
 
 ### auto
 
-- auto一般会忽略掉顶层const, 同时底层const则会保留下来, 比如当初始值是一个指向常量的指针时
+- auto一般会<u>忽略掉顶层const, 同时底层const则会保留下来</u>, 比如当初始值是一个指向常量的指针时
 
 ![image-20210123190306561](Notes.assets/image-20210123190306561.png)![image-20210123185900545](Notes.assets/image-20210123185900545.png)
 
@@ -500,13 +666,15 @@ const pstring cstr = 0;  // cstr是一个常量指针, 而不是pointer to const
   const auto f = ci;  // f是const int
   ```
 
+- 和decltype的比较见decltype部分
+
 ## 类型指示符
 
 ### decltype
 
 > 返回操作数的数据类型
 >
-> 编译器: 分析表达式并得到它的类型, 但不实际计算表达式的值
+> 编译器: 分析表达式并得到它的类型, <u>但不实际计算表达式的值</u>
 
 ```cpp
 decltype(f()) sum = x;
@@ -515,6 +683,20 @@ decltype(f()) sum = x;
 ![image-20210124103858855](Notes.assets/image-20210124103858855.png)
 
 - 引用从来都作为其所指对象的同义词出现, 只有在decltype处有点不同. 比如上面的cj
+
+```cpp
+const int ci = 0, &cj = ci;
+decltype(ci) x = 0;  // x: const int
+decltype(cj) y = x;  // y: const int&
+
+int a = 10, b = 20;
+const int* const cpc = &a;
+decltype(cpc) p = &a;
+// p = &b;  // 顶层const被保留下来, 所以不能修改指向
+// *p = 30;  // 底层const也被保留下来, 所以不能通过p修改a的值
+```
+
+顶层, 底层const都会被保留下来
 
 ### decltype和引用
 
@@ -531,10 +713,22 @@ decltype(r + 0)b;
 如果表达式的内容是解引用操作, 则decltype将得到引用类型. 
 
 ```cpp
-decltype(*p) c;  // 得到的类型是int& 而不是int
+decltype(*p) c;  // 得到的类型是int& 而不是int. 因为解引用指针看可以得到指针所指的对象, 能够给这个对象赋值, 所以不是普通的int
 ```
 
+When we apply decltype to a variable without any parentheses(括号), we get the type of that variable. If we wrap the variable’s name in one or more sets of parentheses, the compiler will evaluate the operand as an expression.
+A variable is an expression that can be the left-hand side of an assignment.:question: As a result, decltype on such an expression yields a reference: 如果是双层括号，结果永远是引用, 否则decltype(var)只有当var是引用时, 才会得到引用类型
 
+```cpp
+decltype((i)) d;  // d是int&, 必须初始化
+decltype(i) e;    // e是一个int
+```
+
+### decltype和auto
+
+- auto 用编译器计算变量的初始值来推断其类型; decltype 用编译器分析表达式并得到它的类型, 但**不实际计算表达式的值**
+- auto 会忽略顶层const, 保留底层const; decltype 会保留变量的顶层, 底层const
+- decltype((var)) 和 decltype(var) 不同
 
 # ghost
 
@@ -542,6 +736,18 @@ decltype(*p) c;  // 得到的类型是int& 而不是int
 
 - Windows的可执行文件是 .exe, UNIX系统通常是 .out, 或者没有后缀
 - C++是一种静态数据类型(<u>静态类型</u>, statically typed)语言, 它的类型检查发生在编译时(检查类型的过程称为类型检查type checking): 编译器会检查数据类型是否支持要执行的运算, 如果支持, 编译器会报错且不会生成可执行文件. 
+
+## 预处理器
+
+- 程序可能多次包含同一个头文件(比如自己本身包含string.h, 然后包含的另一个data.h文件中又包含了string.h), 所以就需要预处理器, 使用头文件保护符(header guard)来防止重复包含(定义)
+
+  <img src="Notes.assets/image-20210128205050536.png" alt="image-20210128205050536" style="zoom:67%;" />
+
+- 预处理器的另一个作用: 看到#include标记时用指定的头文件的内容代替#include
+
+## 头文件
+
+- 头文件一般不应该使用using声明, 因为头文件的内容会拷贝到所有引用它的文件中去, 头文件有using声明, 包含它的文件也会有这个声明, 可能就会冲突
 
 # Reference
 

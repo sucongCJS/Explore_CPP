@@ -1,13 +1,16 @@
 #include <iostream>
-#include <typeinfo>
+#include <string>
+#include <cctype>
+#include <vector>
 using namespace std;
 
+string ia1[10];
+
 int main(){
-    const int i = 42;
-    auto j = i;
-    const auto &k = i;
-    auto *p = &i;
-    const auto j2 = i, &k2 = i;
-    cout<<typeid(k).name()<<endl;
-    cout<<typeid(k2).name()<<endl;
+    for(auto c:ia1)
+        cout<<c<<"|";
+
+    string ia2[10];
+    for(auto c:ia2)
+        cout<<c<<"|";
 }
